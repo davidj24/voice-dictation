@@ -3,7 +3,7 @@ Description=Push-to-talk dictation into Claude
 After=graphical-session.target kanata.service
 
 [Service]
-ExecStart=%h/projects/voice-dictation/run.sh
+ExecStart=%h/projects/Claude/voice-dictation/run.sh
 Restart=on-failure
 RestartSec=3
 

@@ -1,44 +1,37 @@
 ;; Voice dictation pieces to merge into an existing kanata config.
 ;; Kanata must run with its TCP server on: --port 127.0.0.1:7070
 ;;
-;; 1. Add `ralt` to defsrc, and `@voice` in the same position of the base layer.
+;; 1. Add `ralt`, `esc` and `rctl` to defsrc. In the base layer, put
+;;    `@voice` at ralt, `@voice-esc` at esc and `@voice-rctl` at rctl.
 ;;
 ;; 2. Inside (defvirtualkeys ...):
 
 voice-up-msg (push-msg "voice-up")
+voice-active XX
 
 ;; 3. Inside (defalias ...):
 ;;
-;; Hold Right Alt        = dictate into the active window
-;; Hold Right Alt+Shift  = dictate into Claude (brings it forward)
-
-voice-edit
-(multi
-(push-msg "voice-down")
-(layer-while-held voice)
-(on-release tap-vkey voice-up-msg)
-)
-
-voice-claude
-(multi
-(push-msg "voice-down-claude")
-(layer-while-held voice)
-(on-release tap-vkey voice-up-msg)
-)
+;; Tap Right Alt               = start dictating into the active window;
+;;                               tap again to finish (or hold it, and let go)
+;; Right Ctrl during dictation = send the text to Claude instead
+;; Esc during dictation        = cancel
 
 voice
-(fork
-@voice-edit
-@voice-claude
-(lsft rsft)
+(multi
+(push-msg "voice-down")
+(on-release tap-vkey voice-up-msg)
 )
 
-voice-shift
-(push-msg "voice-claude")
+;; Esc cancels while dictating, and is plain Esc otherwise.
+voice-esc
+(switch
+((input virtual voice-active)) (push-msg "voice-cancel") break
+() esc break
+)
 
-;; 4. A layer active while Right Alt is held; Shift picks Claude instead of typing Shift.
-
-(deflayermap (voice)
-lsft @voice-shift
-rsft @voice-shift
+;; Right Ctrl sends the text to Claude while dictating, and is plain Right Ctrl otherwise.
+voice-rctl
+(switch
+((input virtual voice-active)) (push-msg "voice-claude") break
+() rctl break
 )
