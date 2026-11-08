@@ -1,0 +1,44 @@
+;; Voice dictation pieces to merge into an existing kanata config.
+;; Kanata must run with its TCP server on: --port 127.0.0.1:7070
+;;
+;; 1. Add `ralt` to defsrc, and `@voice` in the same position of the base layer.
+;;
+;; 2. Inside (defvirtualkeys ...):
+
+voice-up-msg (push-msg "voice-up")
+
+;; 3. Inside (defalias ...):
+;;
+;; Hold Right Alt        = dictate into the active window
+;; Hold Right Alt+Shift  = dictate into Claude (brings it forward)
+
+voice-edit
+(multi
+(push-msg "voice-down")
+(layer-while-held voice)
+(on-release tap-vkey voice-up-msg)
+)
+
+voice-claude
+(multi
+(push-msg "voice-down-claude")
+(layer-while-held voice)
+(on-release tap-vkey voice-up-msg)
+)
+
+voice
+(fork
+@voice-edit
+@voice-claude
+(lsft rsft)
+)
+
+voice-shift
+(push-msg "voice-claude")
+
+;; 4. A layer active while Right Alt is held; Shift picks Claude instead of typing Shift.
+
+(deflayermap (voice)
+lsft @voice-shift
+rsft @voice-shift
+)
