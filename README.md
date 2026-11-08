@@ -40,6 +40,20 @@ the text appears within about a second.
     systemctl --user restart voice-dictation     # restart after editing dictate.py
     systemctl --user stop voice-dictation        # turn it off until next login
 
+## Windows
+
+`dictate_windows.py` has the same keys and status pill. It needs an NVIDIA GPU, but not kanata: a keyboard hook reads
+the keys, so Right Alt is taken over everywhere, while Esc and Right Ctrl are only taken during a dictation. It records
+from the default microphone, and the log is at `%LOCALAPPDATA%\voice-dictation\dictate.log`. It can't see keys while an
+administrator window is focused.
+
+    py -m venv .venv
+    .venv\Scripts\python.exe -m pip install faster-whisper sounddevice pyperclip nvidia-cublas-cu12 nvidia-cudnn-cu12
+    .venv\Scripts\python.exe -c "import dictate_windows as d; d.load_model()"
+
+The last line downloads the model. To start it at login, add a Startup-folder shortcut that runs
+`.venv\Scripts\pythonw.exe dictate_windows.py` in this folder.
+
 ## Disk use and removal
 
 About 4 GB: `.venv` (Python + CUDA libraries) and `models/` (Whisper).
